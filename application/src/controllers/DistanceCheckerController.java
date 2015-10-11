@@ -17,13 +17,15 @@ public class DistanceCheckerController {
 		origin = origin.replace(" ", "%20");
 		destination = destination.replace(" ", "%20");
 		String apiKey = (String) ApiKeys.GoogleDistanceMatrix.getValue();
-
-		String status = "";
 		String distanceText = "";
 		
 		try {
 			// Execute the API call and handle the response
 			JSONObject jsonObjectResponse = new JSONObject(IOUtils.toString(new URL("https://maps.googleapis.com/maps/api/distancematrix/json?origins=" + origin + "&destinations=" + destination + "&key=" + apiKey)));
+			String responseStatus = jsonObjectResponse.getString("status");
+			if(!responseStatus.equals("OK"))
+				throw new Exception(responseStatus);
+			
 			// Fetch the rows
 			JSONArray rows = jsonObjectResponse.getJSONArray("rows");
 			// Fetch the first row
@@ -34,11 +36,11 @@ public class DistanceCheckerController {
 			JSONObject element = elements.getJSONObject(0);
 			
 			// Get the status of the API response. 
-			status = element.getString("status");
+			String elementStatus = element.getString("status");
 			// Check if the status equals OK, else throw an exception with the status.
 			// The exception returns the status.
-			if(!status.equals("OK"))
-				throw new Exception(status);
+			if(!elementStatus.equals("OK"))
+				throw new Exception(elementStatus);
 			
 			// So when the status is OK, fetch the distance.
 			JSONObject distance = (JSONObject) element.get("distance");
@@ -60,4 +62,4 @@ public class DistanceCheckerController {
 		
 		return "Distance from origin to destination: " + distanceText;
 	}
-}
+};
